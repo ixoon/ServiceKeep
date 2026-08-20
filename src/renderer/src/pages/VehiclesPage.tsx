@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { getApi } from '@/lib/api'
+import { confirmPermanentDelete } from '@/lib/confirmDelete'
 
 interface Props {
   vehicles: Vehicle[]
@@ -347,6 +348,26 @@ export default function VehiclesPage({
                       await onSelectVehicle(null)
                     }
                     toast.success('Vehicle archived')
+                    await onChange()
+                    await loadArchived()
+                  }}
+                  onDelete={async () => {
+                    if (
+                      !confirmPermanentDelete(
+                        vehicle.name,
+                        'All service entries and photos for this vehicle will be removed.'
+                      )
+                    ) {
+                      return
+                    }
+                    await getApi().deleteVehiclePermanent(vehicle.id)
+                    if (activeVehicleId === vehicle.id) {
+                      await onSelectVehicle(null)
+                    }
+                    if (editingId === vehicle.id) {
+                      cancelEdit()
+                    }
+                    toast.success('Vehicle deleted')
                     await onChange()
                     await loadArchived()
                   }}

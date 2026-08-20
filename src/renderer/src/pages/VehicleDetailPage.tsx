@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ArrowLeft, FileText } from 'lucide-react'
-import { Link, Navigate, useParams, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, FileText, Trash2 } from 'lucide-react'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import type {
   IntervalOverrideMap,
@@ -24,6 +24,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { findEntryTemplate } from '@/lib/entryTemplates'
 import type { EntryTemplate } from '@/lib/entryTemplates'
 import { getApi } from '@/lib/api'
+import { confirmPermanentDelete } from '@/lib/confirmDelete'
 import { formatDate, formatKm } from '@/lib/format'
 import { vehicleIdentityLine, vehicleSpecLine } from '@/lib/vehicleIdentity'
 
@@ -34,6 +35,7 @@ interface Props {
 }
 
 export default function VehicleDetailPage({ vehicles, onChange, onSelectVehicle }: Props) {
+  const navigate = useNavigate()
   const { id } = useParams()
   const [searchParams, setSearchParams] = useSearchParams()
   const vehicleId = Number(id)
@@ -128,6 +130,23 @@ export default function VehicleDetailPage({ vehicles, onChange, onSelectVehicle 
     }
   }
 
+  async function deleteVehicle() {
+    if (!vehicle) return
+    if (
+      !confirmPermanentDelete(
+        vehicle.name,
+        'All service entries and photos for this vehicle will be removed.'
+      )
+    ) {
+      return
+    }
+    await getApi().deleteVehiclePermanent(vehicle.id)
+    await onSelectVehicle(null)
+    toast.success('Vehicle deleted')
+    await onChange()
+    navigate('/vehicles', { replace: true })
+  }
+
   if (Number.isNaN(vehicleId)) {
     return <Navigate to="/vehicles" replace />
   }
@@ -161,18 +180,33 @@ export default function VehicleDetailPage({ vehicles, onChange, onSelectVehicle 
               <p className="text-sm text-muted-foreground">{subtitle}</p>
               {identity ? <p className="text-sm text-muted-foreground">{identity}</p> : null}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 shrink-0"
-              onClick={async () => {
-                const path = await getApi().exportVehiclePdf(vehicle.id)
-                if (path) toast.success('PDF exported', { description: path })
-              }}
-            >
-              <FileText className="size-4" />
-              Export PDF
-            </Button>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={async () => {
+                  try {
+                    const path = await getApi().exportVehiclePdf(vehicle.id)
+                    if (path) toast.success('PDF exported', { description: path })
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : 'PDF export failed.')
+                  }
+                }}
+              >
+                <FileText className="size-4" />
+                Export PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2 text-destructive hover:text-destructive"
+                onClick={() => void deleteVehicle()}
+              >
+                <Trash2 className="size-4" />
+                Delete vehicle
+              </Button>
+            </div>
           </div>
         ) : null}
       </div>

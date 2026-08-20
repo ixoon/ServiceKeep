@@ -28,6 +28,7 @@ interface Props {
   onEdit: () => void
   onSetActive: () => void
   onArchive: () => void
+  onDelete: () => void
   onPhotoChanged: () => void
 }
 
@@ -38,6 +39,7 @@ export default function VehicleCard({
   onEdit,
   onSetActive,
   onArchive,
+  onDelete,
   onPhotoChanged
 }: Props) {
   const [photoUrl, setPhotoUrl] = useState<string | null>(null)
@@ -219,6 +221,10 @@ export default function VehicleCard({
         <Button variant="ghost" size="sm" onClick={onArchive}>
           <Archive className="size-4" />
           Archive
+        </Button>
+        <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive" onClick={onDelete}>
+          <Trash2 className="size-4" />
+          Delete
         </Button>
       </CardFooter>
     </Card>

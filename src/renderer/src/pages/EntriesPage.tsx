@@ -19,6 +19,7 @@ import {
   type EntryFilterState
 } from '@/lib/entryFilters'
 import { getApi } from '@/lib/api'
+import { confirmPermanentDelete } from '@/lib/confirmDelete'
 import { formatCategory, formatDate, formatEur, formatKm } from '@/lib/format'
 
 interface Props {
@@ -320,6 +321,28 @@ export default function EntriesPage({
                           title="Archive"
                         >
                           <Archive className="size-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={async () => {
+                            if (
+                              !confirmPermanentDelete(
+                                `"${entry.title}"`,
+                                'Photos attached to this entry will also be removed.'
+                              )
+                            ) {
+                              return
+                            }
+                            await getApi().deleteEntryPermanent(entry.id)
+                            toast.success('Entry deleted')
+                            await reload()
+                            await onChange()
+                          }}
+                          title="Delete entry"
+                        >
+                          <Trash2 className="size-4" />
                         </Button>
                       </>
                     )}

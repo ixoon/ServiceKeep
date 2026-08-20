@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/sheet'
 import { Textarea } from '@/components/ui/textarea'
 import { getApi } from '@/lib/api'
+import { confirmPermanentDelete } from '@/lib/confirmDelete'
 import { formatCategory, formatDate, formatEur, formatKm } from '@/lib/format'
 
 interface Props {
@@ -148,11 +149,11 @@ export default function EntryDetailSheet({
 
   async function handleDeletePermanent() {
     if (!entry) return
-    if (!confirm(`Permanently delete "${entry.title}"? This cannot be undone.`)) {
+    if (!confirmPermanentDelete(`"${entry.title}"`, 'Photos attached to this entry will also be removed.')) {
       return
     }
     await getApi().deleteEntryPermanent(entry.id)
-    toast.success('Entry deleted permanently')
+    toast.success('Entry deleted')
     onOpenChange(false)
     await onChanged()
   }
@@ -179,6 +180,15 @@ export default function EntryDetailSheet({
                     </Button>
                     <Button variant="ghost" size="icon-sm" onClick={() => void handleArchive()} title="Archive">
                       <Archive className="size-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => void handleDeletePermanent()}
+                      title="Delete entry"
+                    >
+                      <Trash2 className="size-4" />
                     </Button>
                   </>
                 ) : (
@@ -379,10 +389,20 @@ export default function EntryDetailSheet({
                     </Button>
                   </div>
                 ) : (
-                  <Button variant="outline" className="w-full gap-2" onClick={() => setEditing(true)}>
-                    <Pencil className="size-4" />
-                    Edit entry
-                  </Button>
+                  <div className="flex flex-col gap-2">
+                    <Button variant="outline" className="w-full gap-2" onClick={() => setEditing(true)}>
+                      <Pencil className="size-4" />
+                      Edit entry
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="w-full gap-2"
+                      onClick={() => void handleDeletePermanent()}
+                    >
+                      <Trash2 className="size-4" />
+                      Delete entry
+                    </Button>
+                  </div>
                 )}
               </>
             )}

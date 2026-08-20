@@ -1,3 +1,4 @@
+import logoUrl from '@/assets/logo.png'
 import { cn } from '@/lib/utils'
 
 interface Props {
@@ -6,22 +7,18 @@ interface Props {
 }
 
 const sizes = {
-  sm: 'size-8 text-xs',
-  md: 'size-10 text-sm',
-  lg: 'size-12 text-base'
+  sm: 'size-8',
+  md: 'size-10',
+  lg: 'size-12'
 }
 
 export default function AppLogo({ className, size = 'md' }: Props) {
   return (
-    <div
-      className={cn(
-        'flex shrink-0 items-center justify-center rounded-lg bg-primary font-bold text-primary-foreground',
-        sizes[size],
-        className
-      )}
+    <img
+      src={logoUrl}
+      alt=""
       aria-hidden
-    >
-      SK
-    </div>
+      className={cn('shrink-0 rounded-lg object-cover', sizes[size], className)}
+    />
   )
 }

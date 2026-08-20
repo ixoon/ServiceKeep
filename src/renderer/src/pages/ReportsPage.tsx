@@ -112,8 +112,12 @@ export default function ReportsPage({ vehicles, activeVehicleId, onSelectVehicle
                 size="sm"
                 className="gap-2"
                 onClick={async () => {
-                  const path = await getApi().exportVehiclePdf(activeVehicleId, year)
-                  if (path) toast.success('PDF exported', { description: path })
+                  try {
+                    const path = await getApi().exportVehiclePdf(activeVehicleId, year)
+                    if (path) toast.success('PDF exported', { description: path })
+                  } catch (err) {
+                    toast.error(err instanceof Error ? err.message : 'PDF export failed.')
+                  }
                 }}
               >
                 <FileText className="size-4" />
